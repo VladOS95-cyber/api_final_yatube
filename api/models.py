@@ -28,3 +28,44 @@ class Comment(models.Model):
     created = models.DateTimeField(
         "Дата добавления", auto_now_add=True, db_index=True
     )
+
+
+class Group(models.Model):
+    title = models.CharField(
+        verbose_name='Название группы',
+        max_length=200,
+        help_text='Напишите название группы'
+    )
+    slug = models.SlugField(
+        verbose_name='Слаг',
+        max_length=50,
+        unique=True,
+        help_text='Укажите адрес для страницы задачи.'
+    )
+    description = models.TextField(
+        verbose_name='Описание',
+        help_text='Добавьте описание группы'
+    )
+
+    def __str__(self):
+        return self.title
+
+
+class Follow(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Имя подписчика',
+        related_name='follower',
+        help_text='Имя подписчика добавляется автоматически'
+    )
+    following = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Имя подписанта',
+        related_name='following',
+        help_text='Имя подписанта добавляется автоматически'
+    )
+
+    class Meta:
+        unique_together = ['user', 'following']
