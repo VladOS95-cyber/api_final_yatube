@@ -1,8 +1,9 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from .models import Post, Group
-from .serializers import CommentSerializer, GroupSerializer, PostSerializer
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import viewsets, mixins, filters
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from .models import Post, Group, Follow, User
+from .serializers import CommentSerializer, GroupSerializer, PostSerializer, FollowSerializer
 from .permissions import IsAuthorOrReadOnly
 
 
@@ -13,6 +14,8 @@ class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = PERMISSION_CLASSES
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['group', ]
 
     def perform_create(self, serializer):
         save_params = {
@@ -38,7 +41,32 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(**save_params)
 
 
-class GroupViewSet(viewsets.ModelViewSet):
+class GroupViewSet(mixins.CreateModelMixin,
+                   mixins.RetrieveModelMixin,
+                   mixins.UpdateModelMixin,
+                   mixins.DestroyModelMixin,
+                   mixins.ListModelMixin,
+                   viewsets.GenericViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = PERMISSION_CLASSES
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+
+class FollowViewSet(mixins.CreateModelMixin,
+                   mixins.RetrieveModelMixin,
+                   mixins.UpdateModelMixin,
+                   mixins.DestroyModelMixin,
+                   mixins.ListModelMixin,
+                   viewsets.GenericViewSet):
+    queryset = Follow.objects.all()
+    serializer_class = FollowSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['=user__username', '=following__username']
+
+    def get_queryset(self):    
+        user = get_object_or_404(User, username=self.request.user)
+        return Follow.objects.filter(following=user)
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

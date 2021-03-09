@@ -4,6 +4,17 @@ from django.db import models
 User = get_user_model()
 
 
+class Group(models.Model):
+    title = models.CharField(
+        verbose_name='Название группы',
+        max_length=200,
+        help_text='Напишите название группы'
+    )
+
+    def __str__(self):
+        return self.title
+    
+
 class Post(models.Model):
     text = models.TextField()
     pub_date = models.DateTimeField(
@@ -11,6 +22,13 @@ class Post(models.Model):
     )
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="posts"
+    )
+    group = models.ForeignKey(
+        Group, on_delete=models.SET_NULL,
+        verbose_name='Группа',
+        help_text='Выберите группу',
+        blank=True, null=True,
+        related_name='posts'
     )
 
     def __str__(self):
@@ -30,27 +48,6 @@ class Comment(models.Model):
     )
 
 
-class Group(models.Model):
-    title = models.CharField(
-        verbose_name='Название группы',
-        max_length=200,
-        help_text='Напишите название группы'
-    )
-    slug = models.SlugField(
-        verbose_name='Слаг',
-        max_length=50,
-        unique=True,
-        help_text='Укажите адрес для страницы задачи.'
-    )
-    description = models.TextField(
-        verbose_name='Описание',
-        help_text='Добавьте описание группы'
-    )
-
-    def __str__(self):
-        return self.title
-
-
 class Follow(models.Model):
     user = models.ForeignKey(
         User,
@@ -66,6 +63,3 @@ class Follow(models.Model):
         related_name='following',
         help_text='Имя подписанта добавляется автоматически'
     )
-
-    class Meta:
-        unique_together = ['user', 'following']
