@@ -53,20 +53,20 @@ class GroupViewSet(mixins.CreateModelMixin,
 
 
 class FollowViewSet(mixins.CreateModelMixin,
-                   mixins.RetrieveModelMixin,
-                   mixins.UpdateModelMixin,
-                   mixins.DestroyModelMixin,
-                   mixins.ListModelMixin,
-                   viewsets.GenericViewSet):
+                    mixins.RetrieveModelMixin,
+                    mixins.UpdateModelMixin,
+                    mixins.DestroyModelMixin,
+                    mixins.ListModelMixin,
+                    viewsets.GenericViewSet):
     queryset = Follow.objects.all()
     serializer_class = FollowSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     search_fields = ['=user__username', '=following__username']
 
-    def get_queryset(self):    
+    def get_queryset(self):  
         user = get_object_or_404(User, username=self.request.user)
         return Follow.objects.filter(following=user)
-    
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
