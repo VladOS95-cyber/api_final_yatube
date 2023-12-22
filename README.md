@@ -15,3 +15,7 @@ Then make all necessary migrations
 python manage.py makemigrations
 ```
 The exact API details is described in redoc.yaml file.
+
+Project author: Vladislav Bronzov
+
+Email: vladislav.bronzov@gmail.com
